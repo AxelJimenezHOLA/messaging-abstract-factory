@@ -5,27 +5,46 @@ import notifications.factories.*;
 
 public class Main {
     public static void main(String[] args) {
-        // Configuración desde system externo
-        String plataforma = "sms"; // email, sms, push
-        String proveedor = "twilio"; // sendgrid, twilio, firebase
+        // Configuración desde notificationSystem externo
+        String plataform = "email"; // email, sms, push
+        String supplier = "sendgrid"; // sendgrid, twilio, firebase || mailchimp, nexmo, onesignal
+        boolean successfulSent = false;
 
-        NotificationFactory factory = getFactory(plataforma, proveedor);
+        while (!successfulSent) {
+            NotificationFactory factory = getPreferredFactory(plataform, supplier);
 
-        NotificationSystem system = new NotificationSystem(factory);
-        system.initialize();
+            NotificationSystem notificationSystem = new NotificationSystem(factory);
+            notificationSystem.initialize();
 
-        // Configurar con parámetros específicos
-        String[] configEmail = {"SG-123456", "miempresa.com"};
-        system.configureSystem(configEmail);
+            // Configurar con parámetros específicos
+            String[] configEmail = {"SG-123456", "miempresa.com"};
+            notificationSystem.configureSystem(configEmail);
 
-        System.out.println("\n=== Probando Plantilla ===");
-        system.testTemplate("Su pedido ha sido enviado");
+            System.out.println("\n=== Probando Plantilla ===");
+            notificationSystem.testTemplate("Su pedido ha sido enviado");
 
-        System.out.println("\n=== Enviando Notificación ===");
-        system.sendNotification("cliente@email.com", "Su orden #1234 está lista");
+            System.out.println("\n=== Enviando Notificación ===");
+
+            // Sistema fallback en caso de que un proveedor no funcione
+            successfulSent = notificationSystem.sendNotification(
+                    "cliente@email.com",
+                    "Su orden #1234 está lista"
+            );
+            if (!successfulSent) {
+                supplier = switch (plataform.toLowerCase() + "-" + supplier.toLowerCase()) {
+                    case "email-sendgrid" -> "mailchimp";
+                    case "email-mailchimp" -> "sendgrid";
+                    case "sms-twilio" -> "nexmo";
+                    case "sms-nexmo" -> "twilio";
+                    case "push-firebase" -> "onesignal";
+                    case "push-onesignal" -> "firebase";
+                    default -> throw new IllegalArgumentException("Combinación no soportada");
+                };
+            }
+        }
     }
 
-    private static NotificationFactory getFactory(String platform, String supplier) {
+    private static NotificationFactory getPreferredFactory(String platform, String supplier) {
         return switch (platform.toLowerCase() + "-" + supplier.toLowerCase()) {
             case "email-sendgrid" -> new SendGridNotificationFactory();
             case "email-mailchimp" -> new MailChimpNotificationFactory();

@@ -7,7 +7,7 @@ import notifications.templates.Template;
 
 public class NotificationSystem {
     private final NotificationFactory factory;
-    private Notifier notificator;
+    private Notifier notifier;
     private Configurator configurator;
     private Template template;
 
@@ -16,7 +16,7 @@ public class NotificationSystem {
     }
 
     public void initialize() {
-        this.notificator = factory.createNotifier();
+        this.notifier = factory.createNotifier();
         this.configurator = factory.createConfigurator();
         this.template = factory.createTemplate();
     }
@@ -26,12 +26,14 @@ public class NotificationSystem {
         System.out.println("Configuración: " + configurator.getConfiguration());
     }
 
-    public void sendNotification(String recipient, String message) {
-        if (notificator.verifyConnection()) {
+    public boolean sendNotification(String recipient, String message) {
+        if (notifier.verifyConnection()) {
             String formattedMessage = template.applyTemplate(message);
-            notificator.send(recipient, formattedMessage);
+            notifier.send(recipient, formattedMessage);
+            return true;
         } else {
             System.out.println("Error: No hay conexión con el proveedor");
+            return false;
         }
     }
 
