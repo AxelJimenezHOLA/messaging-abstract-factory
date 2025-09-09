@@ -1,9 +1,12 @@
 package notifications;
 
 import config.Configurator;
+import notifications.factories.NotificationFactory;
+import notifications.notifiers.Notifier;
+import notifications.templates.Template;
 
 public class NotificationSystem {
-    private NotificationFactory factory;
+    private final NotificationFactory factory;
     private Notifier notificator;
     private Configurator configurator;
     private Template template;
@@ -13,7 +16,7 @@ public class NotificationSystem {
     }
 
     public void initialize() {
-        this.notificator = factory.createNotificator();
+        this.notificator = factory.createNotifier();
         this.configurator = factory.createConfigurator();
         this.template = factory.createTemplate();
     }

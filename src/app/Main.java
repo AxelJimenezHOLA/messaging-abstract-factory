@@ -1,13 +1,13 @@
 package app;
 
-import notifications.NotificationFactory;
 import notifications.NotificationSystem;
+import notifications.factories.*;
 
 public class Main {
     public static void main(String[] args) {
         // Configuración desde system externo
-        String plataforma = "email"; // email, sms, push
-        String proveedor = "sendgrid"; // sendgrid, twilio, firebase
+        String plataforma = "sms"; // email, sms, push
+        String proveedor = "twilio"; // sendgrid, twilio, firebase
 
         NotificationFactory factory = getFactory(plataforma, proveedor);
 
@@ -26,10 +26,13 @@ public class Main {
     }
 
     private static NotificationFactory getFactory(String platform, String supplier) {
-        return switch (platform + "-" + supplier) {
-            case "email-sendgrid" -> new SendGridFactory();
-            case "sms-twilio" -> new TwilioFactory();
-            case "push-firebase" -> new FirebaseFactory();
+        return switch (platform.toLowerCase() + "-" + supplier.toLowerCase()) {
+            case "email-sendgrid" -> new SendGridNotificationFactory();
+            case "email-mailchimp" -> new MailChimpNotificationFactory();
+            case "sms-twilio" -> new TwilioNotificationFactory();
+            case "sms-nexmo" -> new NexmoNotificationFactory();
+            case "push-firebase" -> new FirebaseNotificationFactory();
+            case "push-onesignal" -> new OneSignalNotificationFactory();
             default -> throw new IllegalArgumentException("Combinación no soportada");
         };
     }

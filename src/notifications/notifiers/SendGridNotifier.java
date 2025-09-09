@@ -1,4 +1,4 @@
-package notifications;
+package notifications.notifiers;
 
 public class SendGridNotifier implements Notifier {
     @Override
